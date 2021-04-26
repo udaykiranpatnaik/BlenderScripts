@@ -4,13 +4,15 @@ NormalizeFactor = 100
 
 # Get Spline Curve Infomation
 def GetSplineCurveData(context):
-    selected_objects = bpy.ops.object.select_by_type(type='CURVE')
-    for ob in selected_objects:
-        print(ob.name)
+    selected_objects = bpy.context.selected_objects
+#    for ob in selected_objects:
+#        print(ob.name)
     # check for selected splines
-#    for ob in bpy.context.selected_objects:
-#        spline_track = {}
-#        spline_track["name"] = ob.name
+    result = []
+    for ob in selected_objects:
+        spline_track = {}
+        spline_track["id"] = selected_objects.index(ob)
+        spline_track["name"] = ob.name
 #        spline_track["data"] =[]
 #        # Determining the type of the selected object
 #        if ob.type == 'CURVE':
@@ -42,7 +44,8 @@ def GetSplineCurveData(context):
 #                        spline_dict["OutTangent"]["z"] = handle_out.z * NormalizeFactor   
 #                        spline_points.append(spline_dict)
 #                        spline_track["data"].append(spline_points)
-#    return ob.name                
+        result.append(spline_track)
+    return result               
 
 # Generate GPX file from spline data
 def GenerateGPX(spline_data):
