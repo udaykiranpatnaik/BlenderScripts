@@ -1,6 +1,5 @@
 import bpy
 
-<<<<<<< HEAD
 NormalizeFactor = 100
 
 # Get Spline Curve Infomation
@@ -82,7 +81,6 @@ class SplineOperator(bpy.types.Operator):
         points = GetSplineCurveData(context)
         GenerateGPX(points)
         return {'FINISHED'}
-=======
 class ProcessSpline(bpy.types.Operator):
     bl_idname = "spline.get_data"
     bl_label = "Get Spline Data" 
@@ -108,19 +106,14 @@ class ProcessSpline(bpy.types.Operator):
                             print("Hello")
 
             return {'FINISHED'}
->>>>>>> e4659617845836e071c890745bd51e99d5eeae9f
 
 
 def register():
     bpy.utils.register_class(ProcessSpline)
 
 def unregister():
-<<<<<<< HEAD
     bpy.utils.unregister_class(SplineOperator)
 
 
 if __name__ == "__main__":
     register()
-=======
-    bpy.utils.unregister_class(ProcessSpline)
->>>>>>> e4659617845836e071c890745bd51e99d5eeae9f
