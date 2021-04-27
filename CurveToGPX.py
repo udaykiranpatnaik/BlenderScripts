@@ -1,5 +1,5 @@
 import bpy
-import os
+import zulu
 
 NormalizeFactor = 100
 
@@ -48,6 +48,7 @@ def GetSplineCurveData(context):
 
 # Generate GPX file from spline data
 def GenerateGPX(spline_data):
+   
     xml_header = '<?xml version="1.0" encoding="UTF-8"?>'\
     '\n'+'<gpx version="1.1" creator="VeloViewer with Barometer"'\
     '\n'+'xmlns="http://www.topografix.com/GPX/1/0"'\
@@ -62,6 +63,7 @@ def GenerateGPX(spline_data):
     #xml_trackpoint = '<trkpt lat="' + + '" lon="' + + '"><ele>'+ +'</ele><time>2021-04-12T00:00:00Z</time></trkpt>'
     
     xml_string = xml_header + '\n' + xml_track_start + '\n\t' + xml_trackname + '\n'
+    start_time = zulu.now()
     for seg in spline_data:
         xml_string += '\t\t'+xml_tracksegment_start + '\n'
         track_segments_data = seg.get('data')
@@ -70,7 +72,9 @@ def GenerateGPX(spline_data):
             longitude = track_points.get('Position')['y']*(0.0000001)
             elevation = track_points.get('Position')['z']*(0.01)
             elevation = round(elevation,2)
-            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>2021-04-12T00:00:00Z</time></trkpt>'+'\n'
+            point_index = track_segments_data.index(track_points)
+            time_stamp = start_time.add(minutes=2)
+            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>'+str(time_stamp)+'</time>'+'\n' +'</trkpt>'+'\n'
         xml_string += '\t\t' + xml_tracksegment_end +'\n'
     xml_string += '\t' + xml_track_end +'\n' + xml_gpx_end
     return xml_string
@@ -99,7 +103,7 @@ class SplineOperator(bpy.types.Operator):
 
     def execute(self, context):
         points = GetSplineCurveData(context)
-        gpx_data = GenerateGPX(points)
+        gpx_data = GenerateGPX(points) 
         WriteToFile(gpx_data)
         return {'FINISHED'}
 
