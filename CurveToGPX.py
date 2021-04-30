@@ -74,7 +74,7 @@ def GenerateGPX(spline_data):
             elevation = round(elevation,2)
             point_index = track_segments_data.index(track_points)
             time_stamp = start_time.add(minutes=2)
-            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>'+str(time_stamp)+'</time>'+'\n' +'</trkpt>'+'\n'
+            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>2021-04-12T00:00:00Z</time>'+'\n' +'</trkpt>'+'\n'
         xml_string += '\t\t' + xml_tracksegment_end +'\n'
     xml_string += '\t' + xml_track_end +'\n' + xml_gpx_end
     return xml_string
@@ -82,7 +82,7 @@ def GenerateGPX(spline_data):
         
 def WriteToFile(gpx_data):
     
-    filepath = "D:\Workspace\Scripts\BlenderScripts\VelowviewerGPXTest.gpx"
+    filepath = "D:\Workspace\Development\BlenderScripts\VelowviewerGPXTest.gpx"
     #Opening File in Memory
     file = open(filepath, 'w', encoding='utf-8')
    
