@@ -30,7 +30,7 @@ class PlaceholderProperties(PropertyGroup):
         name="Incr-Dec", 
         min=1,
         soft_max = 1000, 
-        default=4, 
+        default=100, 
         description="Tooltip for Incr-Decr"
     )
 

@@ -1,5 +1,6 @@
 import bpy
-
+import json
+import math
 addon_keymaps = []
 NormalizeFactor = 100
 
@@ -7,8 +8,10 @@ def GetSplineCurveData(context):
     selected_objects = bpy.context.selected_objects
     result = []
     for ob in selected_objects:
+        ob.rotation_euler[2] = math.radians(90)
+        bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
         spline_track = {}
-        spline_track["id"] = selected_objects.index(ob)
+        spline_track["name"] = "BaseSpline" + str(selected_objects.index(ob))
         spline_track["data"] =[]
         # Determining the type of the selected object
         if ob.type == 'CURVE':
@@ -40,50 +43,17 @@ def GetSplineCurveData(context):
                         spline_dict["OutTangent"]["x"] = handle_out.y * NormalizeFactor
                         spline_dict["OutTangent"]["y"] = handle_out.x * NormalizeFactor
                         spline_dict["OutTangent"]["z"] = handle_out.z * NormalizeFactor   
+
                         #spline_points.append(spline_dict)
                         spline_track["data"].append(spline_dict)
         result.append(spline_track)
+        ob.rotation_euler[2] = math.radians(-90)
+        bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
     return result               
 
-# Generate GPX file from spline data
-def GenerateGPX(spline_data):
-   
-    xml_header = '<?xml version="1.0" encoding="UTF-8"?>'\
-    '\n'+'<gpx version="1.1" creator="VeloViewer with Barometer"'\
-    '\n'+'xmlns="http://www.topografix.com/GPX/1/0"'\
-    '\n'+'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'\
-    '\n'+'xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">'
-    xml_track_start = '<trk>'
-    xml_track_end = '</trk>'
-    xml_gpx_end = '</gpx>'
-    xml_trackname = '<name>VeloViewer GPX Test</name>'
-    xml_tracksegment_start = '<trkseg>'
-    xml_tracksegment_end = '</trkseg>'
-    #xml_trackpoint = '<trkpt lat="' + + '" lon="' + + '"><ele>'+ +'</ele><time>2021-04-12T00:00:00Z</time></trkpt>'
-    
-    xml_string = xml_header + '\n' + xml_track_start + '\n\t' + xml_trackname + '\n'
-    for seg in spline_data:
-        xml_string += '\t\t'+xml_tracksegment_start + '\n'
-        track_segments_data = seg.get('data')
-        for track_points in track_segments_data:
-            latitude = track_points.get('Position')['x']*(0.0000001)
-            longitude = track_points.get('Position')['y']*(0.0000001)
-            elevation = track_points.get('Position')['z']*(0.01)
-            elevation = round(elevation,2)
-            point_index = track_segments_data.index(track_points)
-            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>'+ str(elevation) +'</ele><time>2021-04-12T00:00:00Z</time>'+'\n' +'</trkpt>'+'\n'
-        xml_string += '\t\t' + xml_tracksegment_end +'\n'
-    xml_string += '\t' + xml_track_end +'\n' + xml_gpx_end
-    return xml_string
-
-
-
-def write_gpx_data(context, filepath,gpx_data):
-    print("running write_some_data...")
-    f = open(filepath, 'w', encoding='utf-8')
-    f.write(gpx_data)
-    f.close()
-
+def write_json_data(context, filepath,json_data):
+    with open(filepath, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=4)
     return {'FINISHED'}
 
 
@@ -96,14 +66,14 @@ from bpy.types import Operator
 
 class ExportGPXData(Operator, ExportHelper):
     """This appears in the tooltip of the operator and in the generated docs"""
-    bl_idname = "spline_curve.export_gpx"  # important since its how bpy.ops.import_test.some_data is constructed
-    bl_label = "Export GPX Data"
+    bl_idname = "spline_curve.export_json"  # important since its how bpy.ops.import_test.some_data is constructed
+    bl_label = "Export Curve Data to Json"
 
     # ExportHelper mixin class uses this
-    filename_ext = ".gpx"
+    filename_ext = ".json"
 
     filter_glob: StringProperty(
-        default="*.gpx",
+        default="*.json",
         options={'HIDDEN'},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
@@ -111,8 +81,7 @@ class ExportGPXData(Operator, ExportHelper):
 
     def execute(self, context):
         points = GetSplineCurveData(context)
-        gpx_data = GenerateGPX(points) 
-        return write_gpx_data(context, self.filepath, gpx_data)
+        return write_json_data(context, self.filepath,points)
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_export(self, context):
@@ -133,4 +102,4 @@ if __name__ == "__main__":
     register()
 
     # test call
-    bpy.ops.spline_curve.export_gpx('INVOKE_DEFAULT')
+    bpy.ops.spline_curve.export_json('INVOKE_DEFAULT')

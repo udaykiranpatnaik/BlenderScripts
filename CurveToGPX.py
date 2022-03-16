@@ -1,6 +1,5 @@
 import bpy
-import zulu
-
+from datetime import datetime
 NormalizeFactor = 100
 
 # Get Spline Curve Infomation
@@ -46,7 +45,7 @@ def GetSplineCurveData(context):
         result.append(spline_track)
     return result               
 
-# Generate GPX file from spline data
+# Generate GPX file from spline data in XML format
 def GenerateGPX(spline_data):
    
     xml_header = '<?xml version="1.0" encoding="UTF-8"?>'\
@@ -60,10 +59,13 @@ def GenerateGPX(spline_data):
     xml_trackname = '<name>VeloViewer GPX Test</name>'
     xml_tracksegment_start = '<trkseg>'
     xml_tracksegment_end = '</trkseg>'
-    #xml_trackpoint = '<trkpt lat="' + + '" lon="' + + '"><ele>'+ +'</ele><time>2021-04-12T00:00:00Z</time></trkpt>'
-    
     xml_string = xml_header + '\n' + xml_track_start + '\n\t' + xml_trackname + '\n'
-    start_time = zulu.now()
+    date_time_obj = datetime.now()
+    year = date_time_obj.year
+    month = date_time_obj.month
+    date = date_time_obj.day
+    hours = date_time_obj.hour
+    minutes = date_time_obj.minute
     for seg in spline_data:
         xml_string += '\t\t'+xml_tracksegment_start + '\n'
         track_segments_data = seg.get('data')
@@ -73,13 +75,12 @@ def GenerateGPX(spline_data):
             elevation = track_points.get('Position')['z']*(0.01)
             elevation = round(elevation,2)
             point_index = track_segments_data.index(track_points)
-            time_stamp = start_time.add(minutes=2)
-            xml_string += '\t\t\t'+'<trkpt lat="' +str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>2021-04-12T00:00:00Z</time>'+'\n' +'</trkpt>'+'\n'
+            xml_string += '\t\t\t'+'<trkpt lat="' + str(latitude) + '" lon="' + str(longitude)+ '"><ele>"'+ str(elevation) +'"</ele><time>'+"%s-%s-%sT%s:%s:00Z" %(year,month,date,hours,minutes) +'</time>'+'\n' +'</trkpt>'+'\n'
         xml_string += '\t\t' + xml_tracksegment_end +'\n'
     xml_string += '\t' + xml_track_end +'\n' + xml_gpx_end
     return xml_string
-    
-        
+
+# Write GPX data to File    
 def WriteToFile(gpx_data):
     
     filepath = "D:\Workspace\Development\BlenderScripts\VelowviewerGPXTest.gpx"
@@ -91,7 +92,8 @@ def WriteToFile(gpx_data):
     
     #Writing file contents
     file.close()
-    
+
+# Spline action events    
 class SplineOperator(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "spline.operator"
@@ -118,3 +120,6 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+    
+    # test call
+    bpy.ops.spline_curve.export_gpx('INVOKE_DEFAULT')
